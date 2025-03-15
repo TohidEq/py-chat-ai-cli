@@ -1,13 +1,31 @@
 #!/usr/bin/env python
 
-from os import system, name
+from os import system, name, getenv
 from rich.console import Console
 from rich.markdown import Markdown
+from dotenv import load_dotenv
 import keyboard
 import sys
+import requests
 
 MARKDOWN_MODE = True;
+MARKDOWN_OFF_LIST = ["markdown=off",
+                    "markdown=disable",
+                    "markdown=false",
+                    "markdown=False",
+                    "markdown=0"]
 
+
+load_dotenv()
+API_KEY = getenv("API_KEY")
+API_URL = "https://openrouter.ai/api/v1/chat/completions"
+API_MODEL = "deepseek/deepseek-chat:free"
+
+# Define the headers for the API request
+headers = {
+    'Authorization': f'Bearer {API_KEY}',
+    'Content-Type': 'application/json'
+}
 # define our clear function
 def clear():
 
@@ -46,6 +64,23 @@ def get_input():
             return "\n".join(lines)
 
 
+def get_answer(question):
+    global headers, API_URL, API_MODEL
+    # Define the request payload (data)
+    data = {
+        "model": API_MODEL,
+        "messages": [{"role": "user", "content": question}]
+    }
+    # Send the POST request to the DeepSeek API
+    response = requests.post(API_URL, json=data, headers=headers)
+
+    # Check if the request was successful
+    if response.status_code == 200:
+        return(response.json()["choices"][0]["message"]["content"])
+    else:
+        return(f"Failed to fetch data from API. Status Code: { response.status_code}")
+
+
 
 
 
@@ -67,8 +102,9 @@ def main():
     global MARKDOWN_MODE
     # Check Args
     user_args= ' '.join(sys.argv[1:])
-    if user_args in ["markdown=off","markdown=false","markdown=False","markdown=0"]:
+    if user_args in MARKDOWN_OFF_LIST:
         MARKDOWN_MODE = False
+
 
 
     clear()
@@ -99,9 +135,7 @@ def main():
         print_markdown(user_input);
 
         print_borderized("# AI Answer:")
-
-        print_markdown("AI Answer here")
-
+        print_markdown(get_answer(user_input))
         print_markdown("---")
 
         if input("\n(Enter C to Clear) >> ").upper()=="C":
