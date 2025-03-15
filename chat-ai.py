@@ -4,8 +4,9 @@ from os import system, name
 from rich.console import Console
 from rich.markdown import Markdown
 import keyboard
+import sys
 
-
+MARKDOWN_MODE = True;
 
 # define our clear function
 def clear():
@@ -48,56 +49,67 @@ def get_input():
 
 
 
-def main():
-    clear()
+def print_markdown(text):
+    if MARKDOWN_MODE:
+        Console().print(Markdown(text))
+    else:
+        print(text)
 
-    console = Console()
+def print_borderized(text):
+    print_markdown("---")
+    print_markdown(text)
+    print_markdown("---")
+
+
+
     #md = Markdown("result of chat here")
+def main():
+    global MARKDOWN_MODE
+    # Check Args
+    user_args= ' '.join(sys.argv[1:])
+    if user_args in ["markdown=off","markdown=false","markdown=False","markdown=0"]:
+        MARKDOWN_MODE = False
+
+
+    clear()
     #console.print(md)
-
-
     app_alive = True
-    console.print(Markdown("---"));
-    console.print(Markdown("- **Use Markdown Format**"))
-    print()
-    console.print(Markdown("For example your codes can be like this:"))
-    print("\n\t```language")
-    print("\t\tYour Codes Here")
-    print("\t```\n")
+    print_markdown("---")
+    if MARKDOWN_MODE:
+        print_markdown("- **Use Markdown Format**")
+        print()
+        print_markdown("For example your codes can be like this:")
+        print("\n\t```language")
+        print("\t\tYour Codes Here")
+        print("\t```\n")
+    else:
+        print_markdown("Markdown mode is off :D")
 
     while app_alive:
-        console.print(Markdown("---"));
-        console.print(Markdown("- **Enter your question and use Ctrl+Enter to send:**"))
-        console.print(Markdown("---"));
+        print_borderized("- **Enter your question and use Ctrl+Enter to send:**")
 
         user_input=get_input();
 
-        if user_input==False:
-            app_alive==False
+        if user_input == False:
+            app_alive == False
             break
 
-        console.print(Markdown("---"));
-        console.print(Markdown("# Your Question:"))
-        console.print(Markdown("---"));
+        print_borderized("# Your Question:")
 
-        console.print(Markdown(user_input));
+        print_markdown(user_input);
 
-        console.print(Markdown("---"));
-        console.print(Markdown("# AI Answer:"))
-        console.print(Markdown("---"));
+        print_borderized("# AI Answer:")
 
-        console.print(Markdown("AI Answer here"))
+        print_markdown("AI Answer here")
 
-        console.print(Markdown("---"));
+        print_markdown("---")
 
-        if input("\n(Enter C to Clear)>> ").upper()=="C":
+        if input("\n(Enter C to Clear) >> ").upper()=="C":
             clear()
 
     # clear screen before app ends
     clear()
-    console.print(Markdown("---"));
-    console.print(Markdown("# **Bye Bye :D**"))
-    console.print(Markdown("---"))
+    print_borderized("# **Bye Bye :D**")
 
 if __name__ == "__main__":
     main()
